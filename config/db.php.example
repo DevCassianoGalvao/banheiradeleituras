@@ -1,0 +1,24 @@
+<?php
+// Copie este arquivo para db.php (fora do controle de versão) e preencha
+// com as credenciais reais do MySQL do cPanel. Nunca commitar db.php real.
+
+$DB_HOST = 'localhost';
+$DB_NAME = 'trocar_pelo_nome_do_banco';
+$DB_USER = 'trocar_pelo_usuario';
+$DB_PASS = 'trocar_pela_senha';
+
+try {
+    $pdo = new PDO(
+        "mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8mb4",
+        $DB_USER,
+        $DB_PASS,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false, // força prepared statements reais
+        ]
+    );
+} catch (PDOException $e) {
+    http_response_code(500);
+    exit(json_encode(['error' => 'database connection failed']));
+}

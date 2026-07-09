@@ -1,0 +1,4 @@
+config/db.php
+config/openai.php
+node_modules/
+*.log

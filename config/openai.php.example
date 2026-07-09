@@ -1,0 +1,6 @@
+<?php
+// Copie este arquivo para openai.php (fora do controle de versão) e
+// preencha com a chave real. Nunca commitar openai.php real, nunca expor
+// esta chave em código JS/front-end.
+
+define('OPENAI_API_KEY', 'sk-trocar-pela-chave-real');

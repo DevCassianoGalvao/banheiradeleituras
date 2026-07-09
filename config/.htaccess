@@ -1,0 +1,4 @@
+# Bloqueia qualquer acesso HTTP direto a esta pasta.
+# Mesmo que o cPanel exponha /config/ dentro da webroot por engano,
+# ninguém consegue baixar db.php ou openai.php pelo navegador.
+Require all denied
