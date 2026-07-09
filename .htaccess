@@ -1,0 +1,4 @@
+# cPanel Git Version Control clona o repo inteiro (com .git) dentro da
+# webroot (Repository Path = public_html/banheiradeleituras). Sem isso,
+# dá pra baixar .git pela URL e reconstruir todo o histórico/código-fonte.
+RedirectMatch 404 /\.git
