@@ -12,6 +12,7 @@ let sessions = [];
 let monthGoals = {};
 let currentYear = new Date().getFullYear();
 let currentFilter = 'todos';
+let currentSearch = '';
 
 let timerRunning = false;
 let timerSeconds = 0;
@@ -247,8 +248,16 @@ function renderLista() {
   else if (currentFilter === 'lido') list = list.filter(b => b.read);
   else if (['leve', 'medio', 'denso'].includes(currentFilter)) list = list.filter(b => b.tag === currentFilter);
 
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    list = list.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
+  }
+
   if (list.length === 0) {
-    container.innerHTML = `<div class="empty-state"><span class="big">🛁</span>Nada por aqui ainda.<br>Toque em "+ Adicionar" pra começar.</div>`;
+    const msg = currentSearch
+      ? `<div class="empty-state"><span class="big">🔍</span>Nenhum livro encontrado pra "${escapeHtml(currentSearch)}".</div>`
+      : `<div class="empty-state"><span class="big">🛁</span>Nada por aqui ainda.<br>Toque em "+ Adicionar" pra começar.</div>`;
+    container.innerHTML = msg;
     return;
   }
 
@@ -325,6 +334,11 @@ document.getElementById('filterRow').addEventListener('click', (e) => {
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
   currentFilter = chip.dataset.filter;
+  renderLista();
+});
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  currentSearch = e.target.value.trim();
   renderLista();
 });
 
@@ -889,6 +903,56 @@ async function renderPlacar() {
   }).join('')}
   `;
 }
+
+/* =======================================================================
+   HISTÓRICO DE SESSÕES (calendário/timeline)
+   ======================================================================= */
+function openHistoryModal() {
+  const overlay = document.getElementById('modalOverlay');
+  const body = document.getElementById('modalBody');
+
+  const sorted = [...sessions].sort((a, b) => b.date.localeCompare(a.date));
+
+  const rowsHtml = sorted.length === 0
+    ? `<div class="empty-state"><span class="big">📜</span>Nenhuma sessão de leitura registrada ainda.<br>Use o cronômetro na Banheira pra começar.</div>`
+    : (() => {
+      let lastDate = null;
+      let html = '';
+      sorted.forEach(s => {
+        const book = books.find(b => b.id === s.bookId);
+        if (s.date !== lastDate) {
+          html += `<div class="group-label"><h2>${formatDate(s.date)}</h2><span class="line"></span></div>`;
+          lastDate = s.date;
+        }
+        html += `
+          <div class="leaderboard-row">
+            <div class="rank">📖</div>
+            <div class="info">
+              <div class="nm">${escapeHtml(book ? book.title : 'Livro removido')}</div>
+              <div class="sub">${s.pages} página${s.pages === 1 ? '' : 's'}</div>
+            </div>
+            <div class="count">${formatDuration(s.seconds)}</div>
+          </div>
+        `;
+      });
+      return html;
+    })();
+
+  body.innerHTML = `
+    <div class="modal-handle"></div>
+    <h3>📜 Histórico de leitura</h3>
+    <div style="max-height:60vh; overflow-y:auto;">${rowsHtml}</div>
+    <div class="modal-actions">
+      <button class="btn primary full" id="history-close">Fechar</button>
+    </div>
+  `;
+  body.querySelector('#history-close').addEventListener('click', closeModal);
+  overlay.classList.add('active');
+}
+
+document.getElementById('streakDaysCard').addEventListener('click', openHistoryModal);
+document.getElementById('streakTodayCard').addEventListener('click', openHistoryModal);
+document.getElementById('btnTimerHistory').addEventListener('click', openHistoryModal);
 
 /* =======================================================================
    TIMER + STREAK

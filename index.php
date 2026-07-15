@@ -35,12 +35,12 @@ $userId = $_SESSION['user_id'] ?? null;
   <div class="wrap">
 
     <div class="streak-row">
-      <div class="streak-card">
+      <div class="streak-card" id="streakDaysCard" style="cursor:pointer;" title="Ver histórico de leitura">
         <span class="flame">🔥</span>
         <span class="num" id="streakNum">0</span>
         <span class="lbl">dias seguidos lendo</span>
       </div>
-      <div class="streak-card">
+      <div class="streak-card" id="streakTodayCard" style="cursor:pointer;" title="Ver histórico de leitura">
         <span class="flame">⏱️</span>
         <span class="num" id="totalTimeToday">0min</span>
         <span class="lbl">lido hoje</span>
@@ -48,7 +48,7 @@ $userId = $_SESSION['user_id'] ?? null;
     </div>
 
     <div class="timer-card">
-      <h3>⏱️ Sessão de leitura</h3>
+      <h3 style="display:flex; justify-content:space-between; align-items:center;">⏱️ Sessão de leitura <button class="btn ghost small" id="btnTimerHistory" style="text-transform:none;">📜 Histórico</button></h3>
       <select class="timer-book-select" id="timerBookSelect"></select>
       <div class="timer-display" id="timerDisplay">00:00:00</div>
       <div class="timer-controls">
@@ -113,6 +113,9 @@ $userId = $_SESSION['user_id'] ?? null;
       <button class="btn ghost small" id="btnAddYear" title="Trocar/adicionar ano">📅 <span id="listYearLabel"></span></button>
     </div>
     <button class="btn full" id="btnMood" style="margin-bottom:14px; background:var(--duck);">✨ O que eu leio hoje?</button>
+    <div class="field" style="margin-bottom:12px;">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar por título ou autor...">
+    </div>
     <div class="filter-row" id="filterRow">
       <button class="filter-chip active" data-filter="todos">Todos</button>
       <button class="filter-chip" data-filter="pendente">⏳ Pendentes</button>
