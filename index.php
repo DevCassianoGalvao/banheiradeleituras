@@ -86,12 +86,6 @@ $userId = $_SESSION['user_id'] ?? null;
         <div class="tub-fill" id="tubFill" style="width:0%"><span class="ducks">🦆</span></div>
       </div>
       <p class="tub-caption">Toque em qualquer livro na lista pra marcar como lido</p>
-      <div class="legend">
-        <span><i class="dot" style="background:var(--leaf)"></i>Leve</span>
-        <span><i class="dot" style="background:var(--duck)"></i>Médio</span>
-        <span><i class="dot" style="background:var(--tomato)"></i>Denso</span>
-        <span><i class="dot" style="background:var(--ink)"></i>Muito denso</span>
-      </div>
     </div>
 
     <div class="chip-row">

@@ -331,17 +331,36 @@ document.getElementById('filterRow').addEventListener('click', (e) => {
 /* =======================================================================
    MODAL: editar livro existente
    ======================================================================= */
+function formatDuration(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.round((totalSeconds % 3600) / 60);
+  if (h === 0) return `${m}min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
+}
+
+function bookReadingStats(bookId) {
+  const bookSessions = sessions.filter(s => s.bookId === bookId);
+  return {
+    count: bookSessions.length,
+    totalSeconds: bookSessions.reduce((sum, s) => sum + s.seconds, 0),
+    totalPages: bookSessions.reduce((sum, s) => sum + s.pages, 0),
+  };
+}
+
 function openBookModal(id) {
   const b = books.find(x => x.id === id);
   if (!b) return;
 
   const overlay = document.getElementById('modalOverlay');
   const body = document.getElementById('modalBody');
+  const stats = bookReadingStats(id);
 
   body.innerHTML = `
     <div class="modal-handle"></div>
     <h3>${b.locked ? '🔒 ' : ''}${escapeHtml(b.title)}</h3>
     ${b.pending ? `<div class="pending-note">⏳ Este livro está <strong>pendente de pesquisa</strong> (peso e páginas). Preencha manualmente abaixo.</div>` : ''}
+    ${stats.count > 0 ? `<div class="note-box">⏱️ <strong>${formatDuration(stats.totalSeconds)}</strong> de leitura registrada · ${stats.totalPages} páginas · ${stats.count} sess${stats.count === 1 ? 'ão' : 'ões'} no cronômetro</div>` : ''}
 
     <div class="field">
       <label>Autor(a)</label>
