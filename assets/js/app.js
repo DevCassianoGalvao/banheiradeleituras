@@ -504,7 +504,7 @@ function openAddBookModal(readNow) {
     <div class="modal-handle"></div>
     <h3>${readNow ? '📅 Já li este' : '+ Adicionar livro'}</h3>
     <div class="pending-note">
-      Preencha título e autor. Se você não souber o peso de leitura (leve/médio/denso) ou as páginas, deixe em branco — o livro entra como <strong>"⏳ a pesquisar"</strong> e dá pra completar depois.
+      Preencha título e autor e toque em <strong>"🔍 Buscar automaticamente"</strong> pra IA sugerir peso, páginas e uma nota curta — os campos vêm editáveis, revise antes de salvar. Se preferir, deixe peso em branco e o livro entra como <strong>"⏳ a pesquisar"</strong>.
     </div>
     <div class="field">
       <label>Título *</label>
@@ -514,6 +514,7 @@ function openAddBookModal(readNow) {
       <label>Autor(a) *</label>
       <input type="text" id="n-author" placeholder="Nome do autor ou autora">
     </div>
+    <button class="btn small ghost full" id="n-lookup" style="margin-bottom:14px;">🔍 Buscar automaticamente (IA)</button>
     <div class="field-row">
       <div class="field">
         <label>Peso (opcional)</label>
@@ -529,6 +530,10 @@ function openAddBookModal(readNow) {
         <label>Páginas (opcional)</label>
         <input type="number" id="n-pages" placeholder="ex: 224">
       </div>
+    </div>
+    <div class="field">
+      <label>Nota/descrição curta (opcional)</label>
+      <textarea id="n-note" placeholder="Sobre o que é o livro..."></textarea>
     </div>
     <div class="field">
       <label>Grupo / categoria</label>
@@ -567,6 +572,39 @@ function openAddBookModal(readNow) {
     });
   }
 
+  body.querySelector('#n-lookup').addEventListener('click', async () => {
+    const title = body.querySelector('#n-title').value.trim();
+    const author = body.querySelector('#n-author').value.trim();
+    if (!title || !author) {
+      showToast('Preencha título e autor antes de buscar.');
+      return;
+    }
+    const btn = body.querySelector('#n-lookup');
+    const originalLabel = btn.textContent;
+    btn.textContent = '🔍 Buscando...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('api/lookup-metadata.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, author }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Busca automática indisponível.');
+      body.querySelector('#n-tag').value = data.tag || '';
+      if (data.pages) body.querySelector('#n-pages').value = data.pages;
+      if (data.note) body.querySelector('#n-note').value = data.note;
+      showToast('Sugestão da IA preenchida — revise antes de salvar. ✨');
+    } catch (e) {
+      // Falha na IA nunca trava o cadastro — usuário sempre pode
+      // preencher manualmente e salvar normalmente.
+      showToast(e.message);
+    } finally {
+      btn.textContent = originalLabel;
+      btn.disabled = false;
+    }
+  });
+
   body.querySelector('#n-cancel').addEventListener('click', closeModal);
   body.querySelector('#n-save').addEventListener('click', async () => {
     const title = body.querySelector('#n-title').value.trim();
@@ -577,11 +615,12 @@ function openAddBookModal(readNow) {
     }
     const tag = body.querySelector('#n-tag').value;
     const pages = body.querySelector('#n-pages').value;
+    const note = body.querySelector('#n-note').value.trim();
     const group = body.querySelector('#n-group').value;
 
     try {
       await createBook({
-        title, author, tag, pages, group,
+        title, author, tag, pages, note, group,
         year: currentYear,
         read: !!readNow,
         finishedOn: readNow ? body.querySelector('#n-date').value : '',

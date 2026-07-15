@@ -103,6 +103,7 @@ switch ($action) {
         $readNow = !empty($input['read']); // usado no registro retroativo ("Já li este")
         $finishedOn = $readNow ? (trim((string)($input['finishedOn'] ?? '')) ?: date('Y-m-d')) : null;
         $stars = isset($input['stars']) ? max(0, min(5, (int)$input['stars'])) : 0;
+        $note = trim((string)($input['note'] ?? '')); // preenchido pela busca automática via IA, editável
 
         if ($title === '' || $author === '') {
             http_response_code(422);
@@ -132,7 +133,7 @@ switch ($action) {
             'author' => $author,
             'tag' => $tag,
             'pages' => $pages,
-            'note' => '',
+            'note' => $note,
             'read_status' => $readNow ? 1 : 0,
             'pending' => $pending ? 1 : 0,
             'stars' => $stars,
