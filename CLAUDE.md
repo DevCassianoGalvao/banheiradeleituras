@@ -30,11 +30,17 @@ domínio existente, não raiz. Isso afeta código e config do dia 1:
    `www.ojhongomes.com.br/api/login.php`). Usar caminho relativo
    (`api/login.php`) ou uma constante `BASE_PATH` central (PHP e/ou JS) fácil
    de trocar num lugar só se a subpasta mudar de nome no futuro.
-2. cPanel Git Version Control: **Repository Path** = `public_html/banheiradeleituras`.
-   Nunca apontar pra raiz do `public_html` do domínio — sobrescreve site já
-   existente.
+2. cPanel Git Version Control: **Repository Path** = `public_html/ojhongomes.com.br/banheiradeleituras`.
+   `ojhongomes.com.br` é domínio **addon** nessa conta cPanel — docroot dele
+   é `public_html/ojhongomes.com.br/`, não `public_html/` raiz (que hospeda
+   vários outros domínios da conta). Nunca apontar pra raiz do `public_html`
+   da conta nem pra raiz de `public_html/ojhongomes.com.br/` — sobrescreve
+   site (WordPress) já existente lá.
 3. `config/.htaccess` (`Deny from all`) funciona igual dentro da subpasta,
    nenhuma mudança necessária.
+4. `.htaccess` na raiz do repo bloqueia acesso HTTP a `.git` — necessário
+   porque o Repository Path acima clona o repo (com `.git`) direto dentro
+   da webroot.
 
 ## Stack confirmada com o cliente
 
@@ -65,11 +71,12 @@ domínio existente, não raiz. Isso afeta código e config do dia 1:
 
 ## Estrutura de pastas esperada
 
-Caminhos abaixo são relativos à raiz do app (`public_html/banheiradeleituras/`
-no cPanel, não à raiz do domínio — ver seção Deploy acima).
+Caminhos abaixo são relativos à raiz do app (`public_html/ojhongomes.com.br/banheiradeleituras/`
+no cPanel, não à raiz do domínio — ver seção Deploy acima). No repositório
+Git, a raiz do repo já É essa pasta (sem `public_html/` aninhado dentro).
 
 ```
-/public_html/banheiradeleituras/
+/public_html/ojhongomes.com.br/banheiradeleituras/
   index.html (ou .php)          — shell do app, carrega o CSS/JS do protótipo
   /assets/                      — css, js, imagens (inclui a ilustração do gato)
   /api/
@@ -100,7 +107,7 @@ no cPanel, não à raiz do domínio — ver seção Deploy acima).
 5. **Estatísticas & Placar** — gráficos e ranking agregados por query.
 6. **Metas mensais, sugestão por humor, exportação** — funcionalidades de
    apoio, menor prioridade.
-7. **Deploy** — subir pro cPanel em `public_html/banheiradeleituras`
+7. **Deploy** — subir pro cPanel em `public_html/ojhongomes.com.br/banheiradeleituras`
    (domínio final: www.ojhongomes.com.br/banheiradeleituras), checklist de
    segurança (ver regras acima) e checklist de caminho relativo (ver seção
    Deploy) revisados antes de ir ao ar.
