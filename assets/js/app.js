@@ -496,6 +496,24 @@ document.getElementById('modalOverlay').addEventListener('click', (e) => {
 /* =======================================================================
    MODAL: adicionar livro novo
    ======================================================================= */
+const FIXED_GROUPS = ['Fila principal', 'Banco de respiros leves', 'Outros'];
+
+function groupOptionsHtml() {
+  const counts = {};
+  books.forEach(b => { counts[b.group] = (counts[b.group] || 0) + 1; });
+  const extraGroups = Object.keys(counts)
+    .filter(g => !FIXED_GROUPS.includes(g))
+    .sort((a, b) => counts[b] - counts[a]);
+
+  let html = FIXED_GROUPS.map(g => `<option value="${escapeHtml(g)}" ${g === 'Outros' ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('');
+  if (extraGroups.length > 0) {
+    html += extraGroups.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)} (usado ${counts[g]}x)</option>`).join('');
+  }
+  html += `<option disabled>──────────</option>`;
+  html += `<option value="__new__">+ Criar categoria nova...</option>`;
+  return html;
+}
+
 function openAddBookModal(readNow) {
   const overlay = document.getElementById('modalOverlay');
   const body = document.getElementById('modalBody');
@@ -537,11 +555,11 @@ function openAddBookModal(readNow) {
     </div>
     <div class="field">
       <label>Grupo / categoria</label>
-      <select id="n-group">
-        <option value="Fila principal">Fila principal</option>
-        <option value="Banco de respiros leves">Banco de respiros leves</option>
-        <option value="Outros" selected>Outros</option>
-      </select>
+      <select id="n-group">${groupOptionsHtml()}</select>
+    </div>
+    <div class="field" id="n-new-group-field" style="display:none;">
+      <label>Nome da categoria nova</label>
+      <input type="text" id="n-new-group" placeholder="ex: Ficção científica">
     </div>
     ${readNow ? `
     <div class="field-row">
@@ -571,6 +589,12 @@ function openAddBookModal(readNow) {
       });
     });
   }
+
+  body.querySelector('#n-group').addEventListener('change', (e) => {
+    const newGroupField = body.querySelector('#n-new-group-field');
+    newGroupField.style.display = e.target.value === '__new__' ? 'block' : 'none';
+    if (e.target.value === '__new__') body.querySelector('#n-new-group').focus();
+  });
 
   body.querySelector('#n-lookup').addEventListener('click', async () => {
     const title = body.querySelector('#n-title').value.trim();
@@ -616,7 +640,14 @@ function openAddBookModal(readNow) {
     const tag = body.querySelector('#n-tag').value;
     const pages = body.querySelector('#n-pages').value;
     const note = body.querySelector('#n-note').value.trim();
-    const group = body.querySelector('#n-group').value;
+    let group = body.querySelector('#n-group').value;
+    if (group === '__new__') {
+      group = body.querySelector('#n-new-group').value.trim();
+      if (!group) {
+        showToast('Digite o nome da categoria nova.');
+        return;
+      }
+    }
 
     try {
       await createBook({
