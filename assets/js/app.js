@@ -215,7 +215,7 @@ function renderHome() {
   const yearBooks = booksOfYear(currentYear);
   const total = yearBooks.length;
   const read = yearBooks.filter(b => b.read).length;
-  const pending = yearBooks.filter(b => b.pending).length;
+  const pending = yearBooks.filter(b => !b.read).length; // fila de leitura, não só "a pesquisar"
   const pct = total ? Math.round((read / total) * 100) : 0;
 
   document.getElementById('readCount').firstChild.textContent = read;
@@ -244,7 +244,10 @@ function renderLista() {
 
   let list = booksOfYear(currentYear);
 
-  if (currentFilter === 'pendente') list = list.filter(b => b.pending);
+  // "Pendentes" pro usuário = fila de leitura (tudo não lido ainda),
+  // não só os "⏳ a pesquisar" (peso/páginas desconhecidos) — esse
+  // subconjunto continua com o badge próprio no card.
+  if (currentFilter === 'pendente') list = list.filter(b => !b.read);
   else if (currentFilter === 'lido') list = list.filter(b => b.read);
   else if (['leve', 'medio', 'denso'].includes(currentFilter)) list = list.filter(b => b.tag === currentFilter);
 
@@ -302,7 +305,7 @@ function renderLista() {
         <div class="book-top">
           <div>
             <p class="book-title">${escapeHtml(b.title)}</p>
-            <p class="book-author">${escapeHtml(b.author)}</p>
+            ${b.author ? `<p class="book-author">${escapeHtml(b.author)}</p>` : ''}
           </div>
           ${badgeHtml}
         </div>
@@ -555,14 +558,14 @@ function openAddBookModal(readNow) {
     <div class="modal-handle"></div>
     <h3>${readNow ? '📅 Já li este' : '+ Adicionar livro'}</h3>
     <div class="pending-note">
-      Preencha título e autor e toque em <strong>"🔍 Buscar automaticamente"</strong> pra IA sugerir peso, páginas e uma nota curta — os campos vêm editáveis, revise antes de salvar. Se preferir, deixe peso em branco e o livro entra como <strong>"⏳ a pesquisar"</strong>.
+      Preencha ao menos o título ou o autor e toque em <strong>"🔍 Buscar automaticamente"</strong> pra IA completar o resto (autor, peso, páginas e nota) — os campos vêm editáveis, revise antes de salvar. Se preferir, deixe peso em branco e o livro entra como <strong>"⏳ a pesquisar"</strong>.
     </div>
     <div class="field">
-      <label>Título *</label>
+      <label>Título</label>
       <input type="text" id="n-title" placeholder="Nome do livro">
     </div>
     <div class="field">
-      <label>Autor(a) *</label>
+      <label>Autor(a) (opcional)</label>
       <input type="text" id="n-author" placeholder="Nome do autor ou autora">
     </div>
     <button class="btn small ghost full" id="n-lookup" style="margin-bottom:14px;">🔍 Buscar automaticamente (IA)</button>
@@ -632,8 +635,8 @@ function openAddBookModal(readNow) {
   body.querySelector('#n-lookup').addEventListener('click', async () => {
     const title = body.querySelector('#n-title').value.trim();
     const author = body.querySelector('#n-author').value.trim();
-    if (!title || !author) {
-      showToast('Preencha título e autor antes de buscar.');
+    if (!title && !author) {
+      showToast('Preencha ao menos o título ou o autor antes de buscar.');
       return;
     }
     const btn = body.querySelector('#n-lookup');
@@ -648,6 +651,8 @@ function openAddBookModal(readNow) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Busca automática indisponível.');
+      if (!title && data.title) body.querySelector('#n-title').value = data.title;
+      if (!author && data.author) body.querySelector('#n-author').value = data.author;
       body.querySelector('#n-tag').value = data.tag || '';
       if (data.pages) body.querySelector('#n-pages').value = data.pages;
       if (data.note) body.querySelector('#n-note').value = data.note;
@@ -666,8 +671,8 @@ function openAddBookModal(readNow) {
   body.querySelector('#n-save').addEventListener('click', async () => {
     const title = body.querySelector('#n-title').value.trim();
     const author = body.querySelector('#n-author').value.trim();
-    if (!title || !author) {
-      showToast('Preencha título e autor.');
+    if (!title) {
+      showToast('Preencha ao menos o título.');
       return;
     }
     const tag = body.querySelector('#n-tag').value;

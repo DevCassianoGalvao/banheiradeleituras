@@ -105,9 +105,9 @@ switch ($action) {
         $stars = isset($input['stars']) ? max(0, min(5, (int)$input['stars'])) : 0;
         $note = trim((string)($input['note'] ?? '')); // preenchido pela busca automática via IA, editável
 
-        if ($title === '' || $author === '') {
+        if ($title === '') {
             http_response_code(422);
-            exit(json_encode(['error' => 'título e autor são obrigatórios']));
+            exit(json_encode(['error' => 'título é obrigatório']));
         }
 
         $pending = !in_array($tag, $validTags, true);
